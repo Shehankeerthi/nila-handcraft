@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact Us | Nila Handcrafts</title>
+  <meta name="description" content="Get in touch with Nila Handcrafts for order questions, custom requests or wholesale enquiries. Email, phone, address and business hours.">
+  <link rel="canonical" href="https://www.nilahandcrafts.lk/contact.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Contact Nila Handcrafts">
+  <meta property="og:description" content="Reach the Nila Handcrafts team for order questions, custom requests or wholesale enquiries.">
+  <meta property="og:image" content="https://www.nilahandcrafts.lk/assets/hero.jpg">
+  <meta property="og:url" content="https://www.nilahandcrafts.lk/contact.html">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23073b70'/%3E%3Ctext x='32' y='43' font-size='30' text-anchor='middle' fill='white' font-family='Georgia,serif' transform='rotate(45 32 32)'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <div class="page-hero">
+      <div class="container">
+        <p class="breadcrumb"><a href="index.html">Home</a> / Contact</p>
+        <h1>Contact Us</h1>
+        <p>Questions about an order, a custom request, or want to stock our pieces at your store? Send a message and we'll reply within one business day.</p>
+      </div>
+    </div>
+
+    <section class="section container contact-section">
+      <div class="contact-grid">
+        <div class="contact-info">
+          <ul class="contact-list">
+            <li><b>Address</b><span>124 Craft Lane, Ratnapura, Sri Lanka</span></li>
+            <li><b>Phone</b><span><a href="tel:+94712345678">+94 71 234 5678</a></span></li>
+            <li><b>Email</b><span><a href="mailto:hello@nilahandcrafts.lk">hello@nilahandcrafts.lk</a></span></li>
+            <li><b>Hours</b><span>Mon – Sat, 9:00 AM – 5:00 PM (closed Sundays and public holidays)</span></li>
+          </ul>
+          <div class="social-row">
+            <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
+            <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+            <a href="https://wa.me/94712345678" target="_blank" rel="noopener" aria-label="WhatsApp">WhatsApp</a>
+          </div>
+          <div class="map-frame">
+            <iframe title="Nila Handcrafts location" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.google.com/maps?q=Ratnapura,Sri+Lanka&output=embed"></iframe>
+          </div>
+        </div>
+        <form class="contact-form" id="contactForm">
+          <label>Name<input required id="cName" placeholder="Your name"></label>
+          <label>Email<input required type="email" id="cEmail" placeholder="you@example.com"></label>
+          <label>Order # (optional)<input id="cOrder" placeholder="e.g. NH-10234"></label>
+          <label>Message<textarea required id="cMessage" rows="5" placeholder="How can we help?"></textarea></label>
+          <button class="btn primary full" type="submit">Send Message →</button>
+          <p class="form-note">This is a demo form — messages aren't sent yet. See the note on connecting a real contact-form backend below.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <div id="cart-drawer-root"></div>
+  <div id="auth-gate-root"></div>
+  <div id="admin-root"></div>
+
+  <script src="assets/store.js"></script>
+  <script>
+    NILA.initSite("contact");
+    document.getElementById("contactForm").addEventListener("submit", e => {
+      e.preventDefault(); e.target.reset();
+      NILA.toast("Message received! We'll get back to you soon.");
+    });
+  </script>
+</body>
+</html>

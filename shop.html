@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop All Handmade Products | Nila Handcrafts</title>
+  <meta name="description" content="Browse coconut shell, wood, woven and jewellery handcrafts. Filter by category, price and availability, and search the full Nila Handcrafts catalogue.">
+  <link rel="canonical" href="https://www.nilahandcrafts.lk/shop.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shop All Handmade Products | Nila Handcrafts">
+  <meta property="og:description" content="Coconut shell, wood, woven and jewellery handcrafts — handmade in Sri Lanka.">
+  <meta property="og:image" content="https://www.nilahandcrafts.lk/assets/hero.jpg">
+  <meta property="og:url" content="https://www.nilahandcrafts.lk/shop.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23073b70'/%3E%3Ctext x='32' y='43' font-size='30' text-anchor='middle' fill='white' font-family='Georgia,serif' transform='rotate(45 32 32)'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <div class="page-hero">
+      <div class="container">
+        <p class="breadcrumb"><a href="index.html">Home</a> / Shop</p>
+        <h1>Shop All Products</h1>
+        <p>Every handcrafted piece we make, in one place. Filter by category, price or availability, or search for something specific.</p>
+      </div>
+    </div>
+
+    <div class="container shop-layout">
+      <aside class="filter-panel">
+        <h4>Category</h4>
+        <div class="filter-group" id="categoryFilters">
+          <label><input type="radio" name="cat" value="all" checked> All Products</label>
+          <label><input type="radio" name="cat" value="Coconut Shell"> Coconut Shell</label>
+          <label><input type="radio" name="cat" value="Wood"> Wood</label>
+          <label><input type="radio" name="cat" value="Woven"> Woven &amp; Natural Fibers</label>
+          <label><input type="radio" name="cat" value="Home Decor"> Home Decor</label>
+          <label><input type="radio" name="cat" value="Jewellery"> Jewellery &amp; Accessories</label>
+        </div>
+        <h4>Max Price</h4>
+        <div class="filter-group">
+          <input type="range" id="priceRange" min="0" max="6000" step="100" value="6000">
+          <div class="price-values"><span>LKR 0</span><span id="priceValue">LKR 6,000</span></div>
+        </div>
+        <h4>Availability</h4>
+        <div class="filter-group">
+          <label><input type="checkbox" id="inStockOnly"> In stock only</label>
+          <label><input type="checkbox" id="onSaleOnly"> On sale</label>
+        </div>
+        <button class="filter-reset" id="resetFilters" type="button">Reset all filters</button>
+      </aside>
+
+      <div>
+        <div class="shop-toolbar">
+          <span class="result-count" id="resultCount"></span>
+          <select id="sortSelect">
+            <option value="featured">Sort: Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
+            <option value="name">Name: A–Z</option>
+          </select>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+        <p class="empty-state" id="emptyState" hidden>No products match your filters. Try widening your search.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <div id="cart-drawer-root"></div>
+  <div id="auth-gate-root"></div>
+  <div id="admin-root"></div>
+
+  <script src="assets/store.js"></script>
+  <script>
+    NILA.initSite("shop");
+
+    const params = new URLSearchParams(location.search);
+    let state = {
+      category: params.get("category") || "all",
+      search: (params.get("q") || "").toLowerCase(),
+      maxPrice: 6000,
+      inStockOnly: false,
+      onSaleOnly: false,
+      sort: "featured"
+    };
+
+    const catRadio = document.querySelector(`input[name="cat"][value="${CSS.escape(state.category)}"]`);
+    if (catRadio) catRadio.checked = true;
+
+    function applyFilters() {
+      let list = NILA.products.filter(p => {
+        if (state.category !== "all" && p.category !== state.category) return false;
+        if (NILA.finalPrice(p) > state.maxPrice) return false;
+        if (state.inStockOnly && NILA.isSoldOut(p)) return false;
+        if (state.onSaleOnly && !(Number(p.discount) > 0)) return false;
+        if (state.search) {
+          const hay = (p.name + " " + p.category + " " + (p.desc || "")).toLowerCase();
+          if (!hay.includes(state.search)) return false;
+        }
+        return true;
+      });
+      switch (state.sort) {
+        case "price-asc": list.sort((a, b) => NILA.finalPrice(a) - NILA.finalPrice(b)); break;
+        case "price-desc": list.sort((a, b) => NILA.finalPrice(b) - NILA.finalPrice(a)); break;
+        case "rating": list.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+        case "name": list.sort((a, b) => a.name.localeCompare(b.name)); break;
+      }
+      return list;
+    }
+
+    function render() {
+      const list = applyFilters();
+      const grid = document.getElementById("productGrid");
+      document.getElementById("resultCount").textContent = `${list.length} product${list.length === 1 ? "" : "s"}`;
+      grid.innerHTML = list.map(p => {
+        const sold = NILA.isSoldOut(p);
+        const fp = NILA.finalPrice(p);
+        return `
+        <article class="product-card" data-product="${p.id}" tabindex="0" role="button" aria-label="View ${p.name}">
+          <div class="product-image"><img src="${p.img}" alt="${p.name}">${NILA.badgeFor(p)}</div>
+          <div class="product-body">
+            <span class="cat-label">${p.category}</span>
+            <h3>${p.name}</h3>
+            ${NILA.ratingHtml(p)}
+            <div class="price-row"><strong>${NILA.money(fp)}</strong>${p.discount > 0 ? `<del>${NILA.money(p.price)}</del>` : ""}</div>
+            ${NILA.stockNote(p)}
+            <div class="card-actions"><button class="add-btn" data-add="${p.id}" ${sold ? "disabled" : ""}>${sold ? "Out of Stock" : "Add to Cart"}</button></div>
+          </div>
+        </article>`;
+      }).join("");
+      document.getElementById("emptyState").hidden = list.length !== 0;
+    }
+    window.NILA_onProductsChanged = render;
+    render();
+
+    document.querySelectorAll('input[name="cat"]').forEach(r => r.addEventListener("change", () => { state.category = r.value; render(); }));
+    const priceRange = document.getElementById("priceRange");
+    priceRange.addEventListener("input", () => {
+      state.maxPrice = Number(priceRange.value);
+      document.getElementById("priceValue").textContent = NILA.money(state.maxPrice);
+      render();
+    });
+    document.getElementById("inStockOnly").addEventListener("change", e => { state.inStockOnly = e.target.checked; render(); });
+    document.getElementById("onSaleOnly").addEventListener("change", e => { state.onSaleOnly = e.target.checked; render(); });
+    document.getElementById("sortSelect").addEventListener("change", e => { state.sort = e.target.value; render(); });
+    document.getElementById("resetFilters").addEventListener("click", () => {
+      state = { category: "all", search: "", maxPrice: 6000, inStockOnly: false, onSaleOnly: false, sort: "featured" };
+      document.querySelector('input[name="cat"][value="all"]').checked = true;
+      priceRange.value = 6000; document.getElementById("priceValue").textContent = "LKR 6,000";
+      document.getElementById("inStockOnly").checked = false; document.getElementById("onSaleOnly").checked = false;
+      document.getElementById("sortSelect").value = "featured";
+      const si = document.getElementById("searchInput"); if (si) si.value = "";
+      render();
+    });
+    const headerSearch = document.getElementById("searchInput");
+    if (headerSearch) headerSearch.addEventListener("input", e => { state.search = e.target.value.trim().toLowerCase(); render(); });
+  </script>
+</body>
+</html>

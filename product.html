@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title id="pageTitle">Product | Nila Handcrafts</title>
+  <meta name="description" id="pageDesc" content="Handcrafted natural products from Nila Handcrafts.">
+  <link rel="canonical" id="pageCanonical" href="https://www.nilahandcrafts.lk/product.html">
+  <meta property="og:type" content="product">
+  <meta property="og:title" id="ogTitle" content="Nila Handcrafts">
+  <meta property="og:description" id="ogDesc" content="Handcrafted natural products from Nila Handcrafts.">
+  <meta property="og:image" id="ogImage" content="https://www.nilahandcrafts.lk/assets/hero.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23073b70'/%3E%3Ctext x='32' y='43' font-size='30' text-anchor='middle' fill='white' font-family='Georgia,serif' transform='rotate(45 32 32)'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <div class="container" style="padding-top:18px">
+      <p class="breadcrumb" id="breadcrumb"><a href="index.html">Home</a> / <a href="shop.html">Shop</a> / …</p>
+    </div>
+
+    <div class="container pdp" id="pdpRoot"></div>
+
+    <div class="container">
+      <div class="reviews-section" id="reviewsSection"></div>
+      <div id="relatedSection"></div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <div id="cart-drawer-root"></div>
+  <div id="auth-gate-root"></div>
+  <div id="admin-root"></div>
+
+  <script src="assets/store.js"></script>
+  <script>
+    NILA.initSite("shop");
+
+    const id = Number(new URLSearchParams(location.search).get("id"));
+    const p = NILA.findProduct(id);
+
+    if (!p) {
+      document.getElementById("pdpRoot").innerHTML = `<div style="grid-column:1/-1;padding:60px 0;text-align:center">
+        <h1 style="font:26px Georgia,serif;color:#103e70">Product not found</h1>
+        <p style="color:var(--muted);margin:10px 0 20px">This item may have been removed or the link is out of date.</p>
+        <a class="btn primary" href="shop.html">Back to Shop →</a>
+      </div>`;
+    } else {
+      document.title = p.name + " | Nila Handcrafts";
+      document.getElementById("pageTitle").textContent = p.name + " | Nila Handcrafts";
+      document.getElementById("pageDesc").setAttribute("content", (p.desc || "").slice(0, 155));
+      document.getElementById("pageCanonical").setAttribute("href", "https://www.nilahandcrafts.lk/product.html?id=" + p.id);
+      document.getElementById("ogTitle").setAttribute("content", p.name + " | Nila Handcrafts");
+      document.getElementById("ogDesc").setAttribute("content", (p.desc || "").slice(0, 155));
+      document.getElementById("ogImage").setAttribute("content", "https://www.nilahandcrafts.lk/" + p.img);
+      document.getElementById("breadcrumb").innerHTML = `<a href="index.html">Home</a> / <a href="shop.html">Shop</a> / <a href="shop.html?category=${encodeURIComponent(p.category)}">${p.category}</a> / ${p.name}`;
+
+      const ld = document.createElement("script");
+      ld.type = "application/ld+json";
+      ld.textContent = JSON.stringify({
+        "@context": "https://schema.org", "@type": "Product", "name": p.name, "description": p.desc,
+        "image": "https://www.nilahandcrafts.lk/" + p.img, "sku": "NILA-" + p.id, "category": p.category,
+        "brand": { "@type": "Brand", "name": "Nila Handcrafts" },
+        "offers": { "@type": "Offer", "priceCurrency": "LKR", "price": Math.round(NILA.finalPrice(p)), "availability": NILA.isSoldOut(p) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", "url": "https://www.nilahandcrafts.lk/product.html?id=" + p.id },
+        "aggregateRating": p.reviewCount ? { "@type": "AggregateRating", "ratingValue": p.rating, "reviewCount": p.reviewCount } : undefined
+      });
+      document.head.appendChild(ld);
+
+      const gallery = NILA.galleryFor(p);
+      let activeImg = 0;
+      function renderGallery() {
+        return `
+        <div class="pdp-gallery">
+          <div class="pdp-main-img"><img id="mainImg" src="${gallery[activeImg]}" alt="${p.name}"></div>
+          <div class="pdp-thumbs">
+            ${gallery.map((g, i) => `<button type="button" class="${i === activeImg ? "active" : ""}" data-thumb="${i}"><img src="${g}" alt="${p.name} view ${i + 1}"></button>`).join("")}
+          </div>
+        </div>`;
+      }
+
+      function renderInfo() {
+        const sold = NILA.isSoldOut(p);
+        const room = p.stock - NILA.inCartQty(p.id);
+        return `
+        <div class="pdp-info">
+          <span class="cat-label">${p.category}</span>
+          <h1>${p.name}</h1>
+          ${NILA.ratingHtml(p)}
+          <div class="price-row"><strong>${NILA.money(NILA.finalPrice(p))}</strong>${p.discount > 0 ? `<del>${NILA.money(p.price)}</del>` : ""}</div>
+          ${NILA.stockNote(p)}
+          <p class="pdp-desc">${p.desc || ""}</p>
+          <table class="spec-table">
+            <tr><td>Material</td><td>${p.material || "—"}</td></tr>
+            <tr><td>Dimensions</td><td>${p.dimensions || "—"}</td></tr>
+            <tr><td>Care</td><td>${p.care || "Handle with care; wipe clean with a soft, dry cloth."}</td></tr>
+            <tr><td>Category</td><td>${p.category}</td></tr>
+          </table>
+          <div class="pdp-actions">
+            <button class="btn primary full" id="addBtn" ${sold ? "disabled" : ""}>${sold ? "Out of Stock" : room <= 0 ? "Maximum already in cart" : "Add to Cart →"}</button>
+          </div>
+          <div class="trust-row">
+            <span>✓ Handmade in Sri Lanka</span>
+            <span>✓ Secure checkout</span>
+            <span>✓ Island-wide delivery</span>
+          </div>
+        </div>`;
+      }
+
+      function renderReviews() {
+        const list = NILA.reviewsFor(p.id);
+        return `
+        <div class="review-summary">
+          <div class="big-rating">${(p.rating || 0).toFixed(1)}</div>
+          <div><span class="stars">${NILA.starRow(p.rating || 0)}</span><div class="rating-count">Based on ${p.reviewCount || 0} reviews</div></div>
+        </div>
+        <div class="review-list">
+          ${list.length ? list.map(r => `
+            <div class="review-item">
+              <div class="review-head"><b>${r.name}</b><small>${r.date}</small></div>
+              <span class="stars">${NILA.starRow(r.rating)}</span>
+              <p>${r.text}</p>
+            </div>`).join("") : `<p style="color:var(--muted);font-size:13px">No reviews yet for this product.</p>`}
+        </div>`;
+      }
+
+      function renderRelated() {
+        const related = NILA.products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4);
+        if (!related.length) return "";
+        return `
+        <div class="section-heading related-heading"><h2>You May Also Like</h2></div>
+        <div class="product-grid">
+          ${related.map(r => `
+          <article class="product-card" data-product="${r.id}" tabindex="0" role="button" aria-label="View ${r.name}">
+            <div class="product-image"><img src="${r.img}" alt="${r.name}">${NILA.badgeFor(r)}</div>
+            <div class="product-body">
+              <span class="cat-label">${r.category}</span><h3>${r.name}</h3>
+              ${NILA.ratingHtml(r)}
+              <div class="price-row"><strong>${NILA.money(NILA.finalPrice(r))}</strong>${r.discount > 0 ? `<del>${NILA.money(r.price)}</del>` : ""}</div>
+              ${NILA.stockNote(r)}
+              <div class="card-actions"><button class="add-btn" data-add="${r.id}" ${NILA.isSoldOut(r) ? "disabled" : ""}>${NILA.isSoldOut(r) ? "Out of Stock" : "Add to Cart"}</button></div>
+            </div>
+          </article>`).join("")}
+        </div>`;
+      }
+
+      function paint() {
+        document.getElementById("pdpRoot").innerHTML = renderGallery() + renderInfo();
+        document.getElementById("reviewsSection").innerHTML = renderReviews();
+        document.getElementById("relatedSection").innerHTML = renderRelated();
+        document.querySelectorAll("[data-thumb]").forEach(btn => btn.onclick = () => { activeImg = Number(btn.dataset.thumb); paint(); });
+        const addBtn = document.getElementById("addBtn");
+        if (addBtn) addBtn.onclick = () => NILA.addToCart(p.id, 1);
+      }
+      paint();
+    }
+  </script>
+</body>
+</html>
